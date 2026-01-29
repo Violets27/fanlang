@@ -16,6 +16,50 @@ Hell, even if you aren't into worldbuilding this software could probably be used
 
 **The beauty of FanLang is that you don't have to make up complex grammar and lingual rules, since your input language already contains all the necessary logics.**
 
+## Quick start (two ways to run)
+
+FanLang has:
+- **A Unity app** (the original project in this repo).
+- **A lightweight web UI mock/demo** in the `web/` folder for the emotion-focused UI concepts.
+
+### Option A — Run the web UI mock (beginner-friendly)
+Use this if you want to see the UI concepts in a browser.
+
+1. **Open a terminal / PowerShell.**
+2. **Go to the repo folder** (the folder that contains `README.md`).
+3. **Go into the `web` folder**:
+   ```powershell
+   cd web
+   ```
+4. **Start a simple local web server**:
+   - **Windows (PowerShell):**
+     ```powershell
+     py -m http.server 8000
+     ```
+   - **Mac/Linux:**
+     ```bash
+     python3 -m http.server 8000
+     ```
+5. **Open the page in your browser:**
+   ```
+   http://localhost:8000/index.html
+   ```
+
+**If you do NOT see a `web` folder:** make sure you have the latest code and run:
+```bash
+git pull
+```
+If the folder still isn’t there, you likely have an older copy of the project.
+
+### Option B — Open the Unity project (full app)
+This repo is a Unity project. To run it:
+
+1. **Install Unity Hub** (https://unity.com/download).
+2. **Open Unity Hub → Open Project** and select the **`fanlang`** folder.
+3. Let Unity import the project, then press **Play**.
+
+> Note: You’ll need the Newtonsoft.Json package (see “Open Source” below).
+
 ## How does it work?
 
 Being a fan of simple things, I decided to to keep this application as simple as possible. FanLang operates on a simple read and replace principle. Character by character, the software tries to find a match from a list of input hashes. Should a matching input be found, we write away the corresponding output to our final translation. If no matching hash is found, we keep the original input.
@@ -117,4 +161,3 @@ Suggestions
 
 ### Additional credit
 Includes the [UnityStandaloneFileBrowser](https://github.com/gkngkc/UnityStandaloneFileBrowser).
-
