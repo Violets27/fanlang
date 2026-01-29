@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FanLang Music Feelings Lab</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="onboarding" class="overlay hidden" role="dialog" aria-modal="true">
+      <div class="overlay-card">
+        <h2>Welcome! Here’s how this works</h2>
+        <ol>
+          <li>This site estimates how the music <strong>feels over time</strong>.</li>
+          <li>
+            Energy = how active/intense. Mood = bright/dark. Tension = resolved/unresolved.
+          </li>
+          <li>You can mute instruments to see how each layer changes the feeling.</li>
+        </ol>
+        <div class="overlay-actions">
+          <button id="start-demo" class="primary">Try a demo</button>
+          <button id="close-onboarding" class="ghost">Continue</button>
+        </div>
+      </div>
+    </div>
+
+    <header class="app-header">
+      <div class="logo">FanLang Feelings</div>
+      <nav class="mode-nav" aria-label="Modes">
+        <button class="mode-button active" data-mode="import">
+          <span class="mode-icon">🎼</span> Import + Analyze
+        </button>
+        <button class="mode-button" data-mode="notes">
+          <span class="mode-icon">🎹</span> Notes Mode
+        </button>
+        <button class="mode-button" data-mode="chords">
+          <span class="mode-icon">🎸</span> Chord Progression
+        </button>
+        <button class="mode-button" data-mode="wheel">
+          <span class="mode-icon">🧭</span> Emotion Wheel
+        </button>
+      </nav>
+      <div class="mode-toggles">
+        <label class="toggle">
+          <input id="mode-style" type="checkbox" />
+          <span>Detailed mode</span>
+        </label>
+        <label class="toggle">
+          <input id="advanced-toggle" type="checkbox" />
+          <span>Advanced</span>
+        </label>
+      </div>
+    </header>
+
+    <main>
+      <section class="quick-start">
+        <button class="quick-button" data-mode-target="import">
+          Upload a file and see feelings
+        </button>
+        <button class="quick-button" data-mode-target="notes">
+          Create notes/chords and see feelings
+        </button>
+      </section>
+      <section class="top-bar" aria-live="polite">
+        <div class="top-primary">
+          <span class="label">Feels like:</span>
+          <span id="primary-emotion" class="primary-emotion">Tension</span>
+          <span id="emotion-icon" class="emotion-icon" aria-hidden="true">⚡</span>
+          <button id="why-button" class="ghost">Why?</button>
+        </div>
+        <div class="emotion-visuals">
+          <div class="visual-block">
+            <div class="visual-label">Energy</div>
+            <div class="meter">
+              <div id="energy-bar" class="meter-fill"></div>
+            </div>
+            <div id="energy-text" class="visual-text">High · Intense</div>
+          </div>
+          <div class="visual-block">
+            <div class="visual-label">Mood</div>
+            <div class="meter mood">
+              <div id="mood-bar" class="meter-fill"></div>
+            </div>
+            <div id="mood-text" class="visual-text">Dark → Bright</div>
+          </div>
+          <div class="visual-block">
+            <div class="visual-label">Tension</div>
+            <div class="meter tension">
+              <div id="tension-bar" class="meter-fill"></div>
+            </div>
+            <div id="tension-text" class="visual-text">Unresolved → Settled</div>
+          </div>
+        </div>
+        <div class="top-secondary">
+          <span class="label">Also:</span>
+          <div id="secondary-tags" class="tags"></div>
+        </div>
+        <div class="top-metrics">
+          <div>
+            <span class="label">Energy</span>
+            <span id="energy-label">High</span>
+            <span class="tooltip" data-tip="How fast/busy the music feels.">?</span>
+          </div>
+          <div>
+            <span class="label">Mood</span>
+            <span id="mood-label">Dark</span>
+            <span class="tooltip" data-tip="More bright vs more dark.">?</span>
+          </div>
+          <div>
+            <span class="label">Tension</span>
+            <span id="tension-label">Rising</span>
+            <span class="tooltip" data-tip="Feels like it’s landing or still waiting to land.">?</span>
+          </div>
+          <div>
+            <span class="label">Confidence</span>
+            <span id="confidence-label">High</span>
+            <span
+              class="tooltip"
+              data-tip="High = the musical cues agree. Low = cues are mixed."
+              >?</span
+            >
+          </div>
+        </div>
+        <div id="why-summary" class="why-summary">
+          Why: the music got busier and less resolved, so it feels more tense.
+        </div>
+        <div id="playback-status" class="playback-status">
+          Now: Window 1 of 6 · Source: Demo
+        </div>
+        <div id="advanced-panel" class="advanced hidden">
+          <span>Advanced:</span>
+          <span id="advanced-metrics">Valence 0.32 · Arousal 0.81 · Tension 0.76</span>
+        </div>
+      </section>
+
+      <section id="why-panel" class="panel hidden">
+        <h3>Why this moment feels like <span id="why-emotion">Tension</span></h3>
+        <ul id="why-reasons"></ul>
+        <div class="change-block">
+          <h4>What changed from the last moment</h4>
+          <ul id="why-changes"></ul>
+        </div>
+      </section>
+
+      <section class="timeline">
+        <div class="timeline-header">
+          <h3>Emotion timeline</h3>
+          <p>Hover a segment for the label + short explanation.</p>
+        </div>
+        <div id="timeline-strip" class="timeline-strip" role="list"></div>
+      </section>
+
+      <section class="content-grid">
+        <div class="panel mode-card active" data-mode-panel="import">
+          <h2>Import + Analyze</h2>
+          <p class="banner">Upload a song file. Press play. Watch how the feeling changes.</p>
+          <div class="upload-area">
+            <input id="file-input" type="file" accept=".mid,.midi,.xml,.musicxml,.mxl" />
+            <button id="play-button" class="primary">Play demo</button>
+            <button id="pause-button" class="ghost">Pause</button>
+            <button id="reset-button" class="ghost">Reset demo</button>
+          </div>
+          <p id="file-status" class="result-text">
+            Upload a file to analyze it. Until then, try a demo below.
+          </p>
+          <div class="demo-buttons">
+            <button class="demo" data-demo="calm">Calm / Peaceful</button>
+            <button class="demo" data-demo="tense">Tense / Suspense</button>
+            <button class="demo" data-demo="power">Powerful / Energetic</button>
+          </div>
+          <div class="instrument-panel">
+            <h3>Instruments</h3>
+            <div id="instrument-list" class="instrument-list"></div>
+          </div>
+          <div class="panel sanity">
+            <h3>Sanity checks</h3>
+            <ul>
+              <li id="check-playback">Playback + emotion sync: waiting</li>
+              <li id="check-mute">Mute updates emotion: waiting</li>
+              <li id="check-why">Why panel uses current mix: waiting</li>
+            </ul>
+          </div>
+          <div id="diff-panel" class="panel hidden">
+            <h3>Before vs After (instrument change)</h3>
+            <div class="diff-columns">
+              <div>
+                <h4>Before</h4>
+                <p id="diff-before"></p>
+              </div>
+              <div>
+                <h4>After</h4>
+                <p id="diff-after"></p>
+              </div>
+            </div>
+            <div>
+              <h4>What changed and why</h4>
+              <ul id="diff-reasons"></ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel mode-card" data-mode-panel="notes">
+          <h2>Notes Mode</h2>
+          <p class="banner">Pick a key, place notes, and we’ll tell you how it feels.</p>
+          <div class="input-grid">
+            <label class="field">
+              <span>Key</span>
+              <select id="notes-key">
+                <option value="C">C major</option>
+                <option value="Am">A minor</option>
+                <option value="G">G major</option>
+                <option value="Em">E minor</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Notes (space-separated)</span>
+              <input id="notes-input" placeholder="C4 D4 E4 G4" />
+            </label>
+            <button id="notes-analyze" class="primary">Analyze notes</button>
+          </div>
+          <p id="notes-result" class="result-text">Add notes to see the emotion timeline.</p>
+        </div>
+
+        <div class="panel mode-card" data-mode-panel="chords">
+          <h2>Chord Progression Mode</h2>
+          <p class="banner">Type chords like Am / F / C / G and we’ll show the feeling.</p>
+          <div class="input-grid">
+            <label class="field">
+              <span>Progression</span>
+              <input id="chords-input" placeholder="Am F C G" />
+            </label>
+            <button id="chords-analyze" class="primary">Analyze progression</button>
+          </div>
+          <p id="chords-result" class="result-text">Add chords to see the emotion timeline.</p>
+        </div>
+
+        <div class="panel mode-card" data-mode-panel="wheel">
+          <h2>Emotion Wheel</h2>
+          <p class="banner">Pick a feeling, and we’ll suggest chords and progressions.</p>
+          <div class="wheel-now">Now: <span id="wheel-now-label">Tension</span></div>
+          <div class="wheel-axis">Calm ↔ Intense · Dark ↔ Bright</div>
+          <div class="wheel-grid" id="emotion-wheel"></div>
+          <div class="panel" id="wheel-results">
+            <h3>Suggestions</h3>
+            <div class="wheel-results">
+              <div>
+                <h4>Single chords</h4>
+                <ul id="wheel-chords"></ul>
+              </div>
+              <div>
+                <h4>Progressions</h4>
+                <ul id="wheel-progressions"></ul>
+              </div>
+            </div>
+            <p class="wheel-why" id="wheel-why"></p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>Default mode shows feelings in plain English. Technical metrics are hidden in Advanced.</p>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
